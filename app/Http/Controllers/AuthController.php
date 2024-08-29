@@ -11,10 +11,8 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
-    // تسجيل مستخدم جديد
     public function register(Request $request)
     {
-        // التحقق من صحة البيانات المدخلة
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:3',
@@ -26,14 +24,12 @@ class AuthController extends Controller
         }
 
         try {
-            // إنشاء بيانات المستخدم
             $userData = [
                 'email' => $request->email,
                 'password' => bcrypt($request->password),
                 'name' => $request->name,
             ];
 
-            // إنشاء المستخدم وتسجيل دخوله
             $user = User::create($userData);
             Auth::login($user);  
             
@@ -53,7 +49,6 @@ class AuthController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        // محاولة تسجيل الدخول وتوليد الـ token
         if (! $token = auth('api')->attempt($validator->validated())) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
@@ -61,22 +56,18 @@ class AuthController extends Controller
         return $this->createNewToken($token);
     }
 
-    // تسجيل خروج المستخدم
     public function logout(Request $request)
     {
-        // تسجيل خروج المستخدم من الـ API
         auth('api')->logout();
 
         return response()->json(['message' => 'User successfully signed out']);
     }
 
-    // استرجاع بيانات المستخدم الحالي
     public function me()
     {
         return response()->json(auth('api')->user());
     }
 
-    // توليد استجابة تحتوي على الـ token والمعلومات ذات الصلة
     protected function createNewToken($token){
         return response()->json([
             'access_token' => $token,
